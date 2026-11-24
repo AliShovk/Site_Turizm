@@ -4,7 +4,7 @@ const b = hotel.booking;
 const mode = b.provider === 'bnovo' && b.url ? 'bnovo' : 'request';
 ---
 <div class="book wrap">
-  <form id="book" data-mode={mode} data-url={b.url ?? ''} data-lang={b.lang ?? ''} data-wa={waUrl() ?? ''} data-hotel={hotel.name}>
+  <form id="book" method="post" data-mode={mode} data-url={b.url ?? ''} data-lang={b.lang ?? ''} data-wa={waUrl() ?? ''} data-hotel={hotel.name}>
     <div class="field"><label for="b-in">Заезд</label><input id="b-in" name="in" type="date" required></div>
     <div class="field"><label for="b-out">Выезд</label><input id="b-out" name="out" type="date" required></div>
     <div class="field">

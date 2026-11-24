@@ -24,7 +24,7 @@ const ogrnLabel = hotel.legal.ogrn?.length === 15 ? 'ОГРНИП' : 'ОГРН';
         <div class="card" id="zayavka">
           <h2 style="font-size:26px">Заявка на бронирование</h2>
           <p class="muted small">Администратор свяжется с вами, подтвердит наличие и цену.</p>
-          <form class="form" id="zayavka-form" data-wa={waUrl() ?? ''} data-email={hotel.contacts.email ?? ''} data-hotel={hotel.name}>
+          <form class="form" id="zayavka-form" method="post" data-wa={waUrl() ?? ''} data-email={hotel.contacts.email ?? ''} data-hotel={hotel.name}>
             <div class="field"><label for="z-name">Имя</label><input id="z-name" name="name" required autocomplete="name"></div>
             <div class="field"><label for="z-phone">Телефон</label><input id="z-phone" name="phone" type="tel" required autocomplete="tel" placeholder="+7"></div>
             <div class="row">
