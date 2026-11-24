@@ -135,7 +135,7 @@ const views = {
     }));
     return [h('h1', {}, 'Номера и цены'), h('p', { class: 'muted small' }, 'Цену «от» можно поменять прямо в списке. Нажмите на номер, чтобы изменить описание и фото. Пустая цена — на сайте будет «Цена по датам».'),
       list, h('h2', {}, ''), h('div', { class: 'grid' }, field('Цена «от» на главной, ₽', H, 'price_from', { type: 'number' }), field('Всего номеров в отеле', H, 'rooms_total', { type: 'number' })),
-      h('button', { class: 'btn wide', type: 'button', onclick: () => { H.rooms.push({ slug: '', name: 'Новый номер', area: null, beds: null, guests: 2, price_from: null, text: '' }); roomIdx = H.rooms.length - 1; setDirty(); render(); } }, '+ Добавить категорию номера')];
+      h('button', { class: 'btn wide', type: 'button', onclick: () => { if (blocked()) return; H.rooms.push({ slug: '', name: 'Новый номер', area: null, beds: null, guests: 2, price_from: null, text: '' }); roomIdx = H.rooms.length - 1; setDirty(); render(); } }, '+ Добавить категорию номера')];
   },
   photos() {
     return [h('h1', {}, 'Фото отеля'), h('p', { class: 'muted small' }, 'Фасад, холл, территория. ★ — сделать фото главным (обложка сайта). Порядок здесь = порядок на сайте. Фото номеров — во вкладке «Номера и цены».'), photoGrid('hotel', { hero: true })];
@@ -191,12 +191,16 @@ function roomEditor(r) {
     h('h2', {}, 'Фото номера'),
     r.slug && P[dir] ? photoGrid(dir) : h('p', { class: 'card muted' }, 'Нажмите «Сохранить», после этого можно будет добавить фото.'),
     h('h2', {}, ''),
-    h('button', { class: 'btn danger wide', type: 'button', onclick: () => { if (confirm(`Удалить категорию «${r.name}» с сайта?`)) { H.rooms.splice(roomIdx, 1); roomIdx = null; setDirty(); render(); } } }, 'Удалить категорию')];
+    h('button', { class: 'btn danger wide', type: 'button', onclick: () => { if (blocked()) return; if (confirm(`Удалить категорию «${r.name}» с сайта?`)) { H.rooms.splice(roomIdx, 1); roomIdx = null; setDirty(); render(); } } }, 'Удалить категорию')];
 }
 
-function render() {
+function blocked() {
   const bad = $('#view').querySelector(':invalid');
-  if (bad) { bad.focus(); bad.reportValidity(); toast('Исправьте поле с ошибкой'); tab = $('#tabs [aria-current=true]')?.dataset.tab || tab; return false; }
+  if (bad) { bad.focus(); bad.reportValidity(); toast('Исправьте поле с ошибкой'); }
+  return !!bad;
+}
+function render() {
+  if (blocked()) return false;
   document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-current', String(b.dataset.tab === tab)));
   $('#view').replaceChildren(...[views[tab]()].flat());
   $('#hotel-name').textContent = H.name;
