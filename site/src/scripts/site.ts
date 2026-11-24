@@ -18,6 +18,7 @@ burger?.addEventListener('click', () => {
 const iso = (d: Date) => new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
 const ru = (s: string) => s.split('-').reverse().join('-');
 const ruDots = (s: string) => s.split('-').reverse().join('.');
+const nextDay = (s: string) => { const [y, m, d] = s.split('-').map(Number); return iso(new Date(y, m - 1, d + 1)); };
 const book = document.getElementById('book') as HTMLFormElement | null;
 if (book) {
   const fin = book.elements.namedItem('in') as HTMLInputElement;
@@ -26,9 +27,9 @@ if (book) {
   fin.min = iso(today); fin.value = iso(today);
   fout.min = iso(tomorrow); fout.value = iso(tomorrow);
   fin.addEventListener('change', () => {
-    const next = new Date(new Date(fin.value).getTime() + 864e5);
-    fout.min = iso(next);
-    if (!fout.value || fout.value <= fin.value) fout.value = iso(next);
+    const next = nextDay(fin.value);
+    fout.min = next;
+    if (!fout.value || fout.value <= fin.value) fout.value = next;
   });
   book.addEventListener('submit', (e) => {
     e.preventDefault();
