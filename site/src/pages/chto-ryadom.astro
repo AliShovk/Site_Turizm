@@ -1,0 +1,24 @@
+---
+import Base from '../layouts/Base.astro';
+import Map from '../components/Map.astro';
+import Cta from '../components/Cta.astro';
+import { hotel, distanceKm, fmtKm, routeUrl } from '../lib/hotel';
+const places = hotel.places.map((p) => ({ ...p, km: distanceKm(hotel.coords, p.coords) })).sort((a, b) => a.km - b.km);
+---
+<Base title={`Что посмотреть рядом — ${hotel.city}`} description={`Достопримечательности рядом с отелем «${hotel.short_name}»: ${places.slice(0, 4).map((p) => p.name).join(', ')}. Расстояния и пешие маршруты.`}>
+  <section class="section">
+    <div class="wrap">
+      <nav class="crumbs"><a href="/">Главная</a> / Что рядом</nav>
+      <h1>Что посмотреть рядом</h1>
+      <p class="lead">Расстояние указано по прямой от отеля. Нажмите «Маршрут» — Яндекс Карты покажут путь и время пешком.</p>
+      <div class="places" style="margin:28px 0">
+        {places.map((p, i) => (
+          <div class="place"><b>{i + 1}. {p.name}</b><span class="dist">{fmtKm(p.km)}</span><p>{p.text}</p>
+            <a href={routeUrl(p.coords, p.km > 2.5 ? 'auto' : 'pd', hotel.coords)} target="_blank" rel="noopener" data-goal="route_click">{p.km > 2.5 ? 'Маршрут на авто →' : 'Пеший маршрут →'}</a></div>
+        ))}
+      </div>
+      <Map zoom={13} points={places.map((p) => p.coords)} />
+    </div>
+  </section>
+  <Cta />
+</Base>

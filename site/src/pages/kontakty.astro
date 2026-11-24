@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+import Map from '../components/Map.astro';
+import { hotel, telUrl, waUrl } from '../lib/hotel';
+const ogrnLabel = hotel.legal.ogrn?.length === 15 ? 'ОГРНИП' : 'ОГРН';
+---
+<Base title="Контакты" description={`Контакты отеля «${hotel.short_name}»: ${hotel.contacts.phone_display}, ${hotel.city}, ${hotel.address}. Заявка на бронирование, реквизиты.`}>
+  <section class="section">
+    <div class="wrap">
+      <nav class="crumbs"><a href="/">Главная</a> / Контакты</nav>
+      <h1>Контакты</h1>
+      <div class="contacts" style="margin-top:28px">
+        <div>
+          <ul class="kv">
+            <li><span>Телефон</span><a href={telUrl()} data-goal="phone_click">{hotel.contacts.phone_display}</a></li>
+            {waUrl() && <li><span>WhatsApp</span><a href={waUrl()} data-goal="wa_click" target="_blank" rel="noopener">Написать в WhatsApp</a></li>}
+            {hotel.contacts.telegram && <li><span>Telegram</span><a href={`https://t.me/${hotel.contacts.telegram}`} data-goal="tg_click" target="_blank" rel="noopener">@{hotel.contacts.telegram}</a></li>}
+            {hotel.contacts.email && <li><span>E-mail</span><a href={`mailto:${hotel.contacts.email}`} data-goal="email_click">{hotel.contacts.email}</a></li>}
+            <li><span>Адрес</span><b>{hotel.postal_code && `${hotel.postal_code}, `}{hotel.region && `${hotel.region}, `}{hotel.city}, {hotel.address}</b></li>
+          </ul>
+          <h2 style="font-size:24px;margin-top:32px">Реквизиты</h2>
+          <p class="muted">{hotel.legal.name}{hotel.legal.inn && <><br>{`ИНН ${hotel.legal.inn}`}</>}{hotel.legal.ogrn && <><br>{`${ogrnLabel} ${hotel.legal.ogrn}`}</>}</p>
+        </div>
+        <div class="card" id="zayavka">
+          <h2 style="font-size:26px">Заявка на бронирование</h2>
+          <p class="muted small">Администратор свяжется с вами, подтвердит наличие и цену.</p>
+          <form class="form" id="zayavka-form" method="post" data-wa={waUrl() ?? ''} data-email={hotel.contacts.email ?? ''} data-hotel={hotel.name}>
+            <div class="field"><label for="z-name">Имя</label><input id="z-name" name="name" required autocomplete="name"></div>
+            <div class="field"><label for="z-phone">Телефон</label><input id="z-phone" name="phone" type="tel" required autocomplete="tel" placeholder="+7"></div>
+            <div class="row">
+              <div class="field"><label for="z-in">Заезд</label><input id="z-in" name="in" type="date"></div>
+              <div class="field"><label for="z-out">Выезд</label><input id="z-out" name="out" type="date"></div>
+            </div>
+            <div class="field"><label for="z-room">Номер</label>
+              <select id="z-room" name="room"><option value="">Любой подходящий</option>{hotel.rooms.map((r) => <option>{r.name}</option>)}</select></div>
+            <div class="field"><label for="z-msg">Комментарий</label><textarea id="z-msg" name="msg" placeholder="Количество гостей, дети, время заезда"></textarea></div>
+            <label class="check"><input type="checkbox" required> <span>Согласен на обработку персональных данных согласно <a href="/politika/">политике конфиденциальности</a></span></label>
+            <div class="btns">
+              {waUrl() && <button class="btn btn-wa" type="submit" value="wa">Отправить в WhatsApp</button>}
+              {hotel.contacts.email && <button class="btn btn-ghost" type="submit" value="email">Отправить на e-mail</button>}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="section soft"><div class="wrap"><Map zoom={16} /></div></section>
+</Base>

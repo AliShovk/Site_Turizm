@@ -1,0 +1,16 @@
+---
+import { hotel, telUrl, bookingUrl } from '../lib/hotel';
+const ext = bookingUrl().startsWith('http');
+---
+<section class="section"><div class="wrap">
+  <div class="cta">
+    <div>
+      <h2>Прямая бронь — без комиссии</h2>
+      <p>Бронируя на сайте отеля, вы платите отелю напрямую, без посредника. Вопросы по заезду решаете с администратором.</p>
+    </div>
+    <div class="btns">
+      <a class="btn btn-primary" href={bookingUrl()} data-goal="book_click" {...(ext ? { target: '_blank', rel: 'noopener' } : {})}>Забронировать номер</a>
+      <a class="btn btn-light" href={telUrl()} data-goal="phone_click">{hotel.contacts.phone_display}</a>
+    </div>
+  </div>
+</div></section>

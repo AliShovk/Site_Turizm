@@ -1,0 +1,18 @@
+---
+import Base from '../layouts/Base.astro';
+import Cta from '../components/Cta.astro';
+import { hotel } from '../lib/hotel';
+const ld = [{ '@context': 'https://schema.org', '@type': 'FAQPage',
+  mainEntity: hotel.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }];
+---
+<Base title="Частые вопросы" description={`Ответы на вопросы гостей отеля «${hotel.short_name}»: бронирование, документы, такси, контакты.`} jsonld={ld}>
+  <section class="section">
+    <div class="wrap">
+      <nav class="crumbs"><a href="/">Главная</a> / Вопросы</nav>
+      <h1>Частые вопросы</h1>
+      <p class="lead" style="margin-bottom:28px">Не нашли ответ — позвоните {hotel.contacts.phone_display} или напишите в WhatsApp.</p>
+      <div class="faq">{hotel.faq.map((f, i) => <details open={i === 0}><summary>{f.q}</summary><p>{f.a}</p></details>)}</div>
+    </div>
+  </section>
+  <Cta />
+</Base>

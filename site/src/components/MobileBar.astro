@@ -1,0 +1,10 @@
+---
+import Icon from './Icon.astro';
+import { telUrl, waUrl, bookingUrl } from '../lib/hotel';
+const ext = bookingUrl().startsWith('http');
+---
+<div class="mbar">
+  <a class="btn btn-navy" href={bookingUrl()} data-goal="book_click" {...(ext ? { target: '_blank', rel: 'noopener' } : {})}>Забронировать</a>
+  <a class="btn btn-ghost" href={telUrl()} data-goal="phone_click" aria-label="Позвонить"><Icon name="phone" /></a>
+  {waUrl() && <a class="btn btn-wa" href={waUrl()} data-goal="wa_click" target="_blank" rel="noopener" aria-label="Написать в WhatsApp"><Icon name="wa" /></a>}
+</div>

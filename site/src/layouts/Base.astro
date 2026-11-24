@@ -1,0 +1,76 @@
+---
+import '@fontsource-variable/manrope';
+import '@fontsource/playfair-display/600.css';
+import '../styles/global.css';
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import MobileBar from '../components/MobileBar.astro';
+import Lightbox from '../components/Lightbox.astro';
+import { hotel, image } from '../lib/hotel';
+
+interface Props { title?: string; description?: string; ogImage?: ImageMetadata; jsonld?: object[] }
+const { title, description, ogImage, jsonld = [] } = Astro.props;
+const fullTitle = title ? `${title} — ${hotel.name}, ${hotel.city}` : hotel.seo.title;
+const desc = description ?? hotel.seo.description;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const og = await getImage({ src: ogImage ?? image(hotel.hero.image), width: 1200, format: 'jpg' });
+const ogUrl = new URL(og.src, Astro.site).href;
+const metrika = hotel.analytics.metrika_id;
+
+const hotelLd = {
+  '@context': 'https://schema.org', '@type': 'Hotel', '@id': hotel.site_url + '/#hotel',
+  name: hotel.name, url: hotel.site_url + '/', image: ogUrl, telephone: hotel.contacts.phone,
+  email: hotel.contacts.email ?? undefined,
+  address: { '@type': 'PostalAddress', streetAddress: hotel.address, addressLocality: hotel.city,
+    addressRegion: hotel.region ?? undefined, postalCode: hotel.postal_code ?? undefined, addressCountry: 'RU' },
+  geo: { '@type': 'GeoCoordinates', latitude: hotel.coords[0], longitude: hotel.coords[1] },
+  starRating: hotel.stars ? { '@type': 'Rating', ratingValue: hotel.stars } : undefined,
+  aggregateRating: hotel.rating ? { '@type': 'AggregateRating', ratingValue: hotel.rating.value, reviewCount: hotel.rating.count, bestRating: 5 } : undefined,
+  numberOfRooms: hotel.rooms_total ?? undefined,
+  priceRange: hotel.price_from ? `от ${hotel.price_from} ₽` : undefined,
+};
+---
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>{fullTitle}</title>
+  <meta name="description" content={desc} />
+  <link rel="canonical" href={canonical} />
+  {hotel.noindex && <meta name="robots" content="noindex, nofollow" />}
+  <meta name="theme-color" content="#1c2b45" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ru_RU" />
+  <meta property="og:site_name" content={hotel.name} />
+  <meta property="og:title" content={fullTitle} />
+  <meta property="og:description" content={desc} />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={ogUrl} />
+  <link rel="sitemap" href="/sitemap-index.xml" />
+  <script type="application/ld+json" set:html={JSON.stringify(hotelLd)} />
+  {jsonld.map((j) => <script type="application/ld+json" set:html={JSON.stringify(j)} />)}
+  {metrika && <script is:inline define:vars={{ metrika }}>
+    (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();
+    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+    (window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');
+    ym(metrika,'init',{clickmap:true,trackLinks:true,accurateTrackBounce:true,webvisor:true});
+    window.__ym=metrika;
+  </script>}
+</head>
+<body>
+  <Header />
+  <main><slot /></main>
+  <Footer />
+  <MobileBar />
+  <Lightbox />
+  {metrika && <div class="cookie" id="cookie">
+    <span>Сайт использует cookie и Яндекс.Метрику для статистики. <a href="/politika/">Подробнее</a></span>
+    <button type="button">Понятно</button>
+  </div>}
+  <script src="../scripts/site.ts"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+---
+import { Image } from 'astro:assets';
+import { type Room, roomImages, fmtPrice } from '../lib/hotel';
+interface Props { room: Room }
+const { room } = Astro.props;
+const imgs = roomImages(room);
+const href = `/nomera/${room.slug}/`;
+---
+<article class="room">
+  <a class="room-ph" href={href} aria-label={room.name}>
+    {imgs[0] && <Image src={imgs[0]} alt={room.name} widths={[420, 640, 840]} sizes="(max-width:640px) 100vw, (max-width:1000px) 50vw, 380px" loading="lazy" />}
+    {imgs.length > 1 && <span class="cnt">{imgs.length} фото</span>}
+  </a>
+  <div class="room-b">
+    <h3><a href={href}>{room.name}</a></h3>
+    <div class="feat">
+      {room.area && <span class="chip">{room.area} м²</span>}
+      {room.guests && <span class="chip">до {room.guests} гостей</span>}
+      {room.beds && <span class="chip">{room.beds}</span>}
+    </div>
+    <p>{room.text}</p>
+    <div class="room-f">
+      <div class="price">
+        {room.price_from ? <><b>от {fmtPrice(room.price_from)}</b><span>за ночь</span></> : <><b>Цена по датам</b><span>в календаре брони</span></>}
+      </div>
+      <a class="btn btn-ghost" href={href}>Подробнее</a>
+    </div>
+  </div>
+</article>

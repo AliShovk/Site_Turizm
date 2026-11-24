@@ -1,0 +1,17 @@
+---
+import Base from '../../layouts/Base.astro';
+import RoomCard from '../../components/RoomCard.astro';
+import Cta from '../../components/Cta.astro';
+import { hotel, fmtPrice } from '../../lib/hotel';
+---
+<Base title="Номера и цены" description={`${hotel.rooms.length} категорий номеров отеля «${hotel.short_name}» в Кисловодске${hotel.price_from ? `, от ${fmtPrice(hotel.price_from)} за ночь` : ''}. Фото, площадь, кровати, бронирование онлайн.`}>
+  <section class="section">
+    <div class="wrap">
+      <nav class="crumbs"><a href="/">Главная</a> / Номера</nav>
+      <h1>Номера и цены</h1>
+      <p class="lead">{hotel.rooms.length} категорий — от двухместного стандарта до семейного люкса. Стоимость зависит от дат заезда: точную цену и свободные номера показывает календарь бронирования.</p>
+      <div class="rooms" style="margin-top:32px">{hotel.rooms.map((r) => <RoomCard room={r} />)}</div>
+    </div>
+  </section>
+  <Cta />
+</Base>

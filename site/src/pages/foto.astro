@@ -1,0 +1,38 @@
+---
+import { Image, getImage } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Cta from '../components/Cta.astro';
+import { hotel, hotelImages, roomImages } from '../lib/hotel';
+import type { ImageMetadata } from 'astro';
+
+const groups: { id: string; title: string; href?: string; imgs: ImageMetadata[] }[] = [
+  { id: 'hotel', title: 'Отель', imgs: hotelImages() },
+  ...hotel.rooms.map((r) => ({ id: r.slug, title: r.name, href: `/nomera/${r.slug}/`, imgs: roomImages(r) })),
+].filter((g) => g.imgs.length);
+const full = new Map<ImageMetadata, string>();
+for (const g of groups) for (const i of g.imgs) full.set(i, (await getImage({ src: i, width: 1600, format: 'webp' })).src);
+const total = groups.reduce((n, g) => n + g.imgs.length, 0);
+---
+<Base title="Фотографии отеля и номеров" description={`${total} фото отеля «${hotel.short_name}» в Кисловодске: здание и все ${hotel.rooms.length} категорий номеров.`}>
+  <section class="section">
+    <div class="wrap">
+      <nav class="crumbs"><a href="/">Главная</a> / Фото</nav>
+      <h1>Фотографии</h1>
+      <p class="lead">{total} фото: здание отеля и все {hotel.rooms.length} категорий номеров. Нажмите на фото, чтобы открыть на весь экран.</p>
+      <div class="chips" style="margin:24px 0 40px">{groups.map((g) => <a class="chip" href={`#${g.id}`} style="text-decoration:none">{g.title}</a>)}</div>
+      {groups.map((g) => (
+        <div class="photo-sec" id={g.id}>
+          <div class="head-row" style="margin-bottom:16px"><h2 style="margin:0;font-size:26px">{g.title}</h2>{g.href && <a class="btn btn-ghost" href={g.href}>О номере</a>}</div>
+          <div class="mosaic">
+            {g.imgs.map((img, i) => (
+              <a href={full.get(img)} data-lb="all" data-cap={g.title}>
+                <Image src={img} alt={`${g.title} — фото ${i + 1}`} widths={i === 0 ? [480, 800, 1100] : [320, 480]} sizes={i === 0 ? '(max-width:760px) 100vw, 580px' : '(max-width:760px) 50vw, 290px'} format="webp" loading="lazy" />
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+  <Cta />
+</Base>
