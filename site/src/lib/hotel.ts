@@ -45,6 +45,7 @@ export function image(rel: string): ImageMetadata {
 export function images(dir: string): ImageMetadata[] {
   return Object.keys(all).filter((k) => k.startsWith(base + dir + '/')).sort(byName).map((k) => all[k].default);
 }
+export const heroImage = () => all[base + hotel.hero.image]?.default ?? images('hotel')[0] ?? images('rooms')[0];
 export const roomImages = (r: Room) => images(`rooms/${r.slug}`);
 export const hotelImages = () => images('hotel');
 

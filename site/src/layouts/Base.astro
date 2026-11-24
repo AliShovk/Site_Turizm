@@ -8,16 +8,17 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import MobileBar from '../components/MobileBar.astro';
 import Lightbox from '../components/Lightbox.astro';
-import { hotel, image } from '../lib/hotel';
+import { hotel, heroImage } from '../lib/hotel';
 
 interface Props { title?: string; description?: string; ogImage?: ImageMetadata; jsonld?: object[] }
 const { title, description, ogImage, jsonld = [] } = Astro.props;
 const fullTitle = title ? `${title} — ${hotel.name}, ${hotel.city}` : hotel.seo.title;
 const desc = description ?? hotel.seo.description;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
-const og = await getImage({ src: ogImage ?? image(hotel.hero.image), width: 1200, format: 'jpg' });
+const og = await getImage({ src: ogImage ?? heroImage(), width: 1200, format: 'jpg' });
 const ogUrl = new URL(og.src, Astro.site).href;
 const metrika = hotel.analytics.metrika_id;
+const ld = (o: unknown) => JSON.stringify(o).replace(/</g, '\\u003c');
 
 const hotelLd = {
   '@context': 'https://schema.org', '@type': 'Hotel', '@id': hotel.site_url + '/#hotel',
@@ -51,8 +52,8 @@ const hotelLd = {
   <meta property="og:url" content={canonical} />
   <meta property="og:image" content={ogUrl} />
   <link rel="sitemap" href="/sitemap-index.xml" />
-  <script type="application/ld+json" set:html={JSON.stringify(hotelLd)} />
-  {jsonld.map((j) => <script type="application/ld+json" set:html={JSON.stringify(j)} />)}
+  <script type="application/ld+json" set:html={ld(hotelLd)} />
+  {jsonld.map((j) => <script type="application/ld+json" set:html={ld(j)} />)}
   {metrika && <script is:inline define:vars={{ metrika }}>
     (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();
     k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
