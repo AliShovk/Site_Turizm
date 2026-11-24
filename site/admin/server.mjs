@@ -86,6 +86,7 @@ async function photos(h) {
 // ---------- validation of edited config ----------
 const str = (v, max = 2000) => (v == null || v === '' ? null : String(v).slice(0, max));
 const num = (v) => (v == null || v === '' ? null : Number.isFinite(Number(v)) ? Number(v) : null);
+const safeUrl = (v, name, schemes = /^https:\/\//) => { const s = str(v, 500); if (s && !schemes.test(s)) throw bad(`Ссылка «${name}» должна начинаться с https://`); return s; };
 const coords = (v) => (Array.isArray(v) && v.length === 2 && v.every((x) => Number.isFinite(Number(x))) ? v.map(Number) : null);
 const translit = (s) => {
   const m = { а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'e',ж:'zh',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'ts',ч:'ch',ш:'sh',щ:'sch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya' };
@@ -99,7 +100,7 @@ function clean(input, prev) {
   h.city_prep = str(input.city_prep, 80) ?? h.city_prep; h.address = req(input.address, 'Адрес');
   h.postal_code = str(input.postal_code, 12); h.region = str(input.region, 120);
   h.coords = coords(input.coords) ?? h.coords; h.rooms_total = num(input.rooms_total); h.price_from = num(input.price_from);
-  h.rating = input.rating && num(input.rating.value) ? { value: num(input.rating.value), count: num(input.rating.count) ?? 0, source: str(input.rating.source, 40) ?? 'Яндекс', url: str(input.rating.url) } : null;
+  h.rating = input.rating && num(input.rating.value) ? { value: num(input.rating.value), count: num(input.rating.count) ?? 0, source: str(input.rating.source, 40) ?? 'Яндекс', url: safeUrl(input.rating.url, 'Ссылка на отзывы') } : null;
   const c = input.contacts || {};
   h.contacts = { phone: req(c.phone, 'Телефон'), phone_display: str(c.phone_display, 40) ?? c.phone, whatsapp: str(c.whatsapp, 20)?.replace(/\D/g, '') || null, telegram: str(c.telegram, 60), email: str(c.email, 120) };
   const l = input.legal || {};
@@ -124,7 +125,7 @@ function clean(input, prev) {
   if (!h.rooms.length) throw bad('Нужен хотя бы один номер');
   h.faq = (input.faq || []).filter((x) => str(x.q)).map((x) => ({ q: str(x.q, 300), a: str(x.a, 2000) ?? '' }));
   h.places = (input.places || []).filter((x) => str(x.name) && coords(x.coords)).map((x) => ({ name: str(x.name, 80), text: str(x.text, 300) ?? '', coords: coords(x.coords) }));
-  h.taxi = (input.taxi || []).filter((x) => str(x.name) && str(x.url)).map((x) => ({ name: str(x.name, 40), text: str(x.text, 120) ?? '', url: str(x.url, 500) }));
+  h.taxi = (input.taxi || []).filter((x) => str(x.name) && str(x.url)).map((x) => ({ name: str(x.name, 40), text: str(x.text, 120) ?? '', url: safeUrl(x.url, x.name, /^(https:\/\/|tel:\+?[\d\s()-]+$)/) }));
   const a = input.arrival || {};
   h.arrival = { ...h.arrival, steps: (a.steps || []).map((s) => str(s, 500)).filter(Boolean) };
   return h;
