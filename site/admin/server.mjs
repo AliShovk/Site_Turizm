@@ -55,6 +55,7 @@ const readBody = (req, limit) => new Promise((ok, fail) => {
 const readJson = async (req) => JSON.parse((await readBody(req, 2e6)).toString('utf8') || '{}');
 const bad = (msg) => Object.assign(new Error(msg), { code: 400 });
 
+const revision = async () => String((await fsp.stat(YAML_FILE)).mtimeMs);
 const loadHotel = async () => yaml.load(await fsp.readFile(YAML_FILE, 'utf8'));
 async function writeHotel(h) {
   await fsp.mkdir(HISTORY, { recursive: true });
@@ -194,12 +195,13 @@ async function handle(req, res) {
 
   const h = await loadHotel();
   if (p === '/api/hotel' && req.method === 'GET') {
-    return send(res, 200, { hotel: h, photos: await photos(h), status: { ...state.build, savedAt: state.savedAt, publishedAt: state.publishedAt } });
+    return send(res, 200, { hotel: h, rev: await revision(), photos: await photos(h), status: { ...state.build, savedAt: state.savedAt, publishedAt: state.publishedAt } });
   }
   if (p === '/api/hotel' && req.method === 'PUT') {
+    if (req.headers['x-rev'] !== await revision()) return send(res, 409, { error: 'Данные изменились в другой вкладке или на другом устройстве. Обновите страницу — несохранённые правки придётся повторить.' });
     const next = clean(await readJson(req), h);
     await writeHotel(next);
-    return send(res, 200, { hotel: next, photos: await photos(next) });
+    return send(res, 200, { hotel: next, rev: await revision(), photos: await photos(next) });
   }
   if (p === '/api/photo' && req.method === 'GET') {
     const dir = dirPath(u.searchParams.get('dir'), h), file = u.searchParams.get('file') || '';
@@ -253,7 +255,7 @@ async function handle(req, res) {
       if (renamed[old]) { h.hero.image = `hotel/${renamed[old]}`; await writeHotel(h); }
     }
     state.savedAt = Date.now(); await persist();
-    return send(res, 200, { hotel: h, photos: await photos(h) });
+    return send(res, 200, { hotel: h, rev: await revision(), photos: await photos(h) });
   }
   if (p === '/api/publish' && req.method === 'POST') {
     if (!publish()) return send(res, 409, { error: 'Сборка уже идёт' });

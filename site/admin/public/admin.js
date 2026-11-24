@@ -20,7 +20,7 @@ const h = (tag, attrs = {}, ...kids) => {
 let toastT;
 const toast = (msg) => { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3200); };
 
-let H = null, P = {}, S = {}, dirty = false, tab = 'rooms', roomIdx = null, ver = Date.now();
+let H = null, REV = '', P = {}, S = {}, dirty = false, tab = 'rooms', roomIdx = null, ver = Date.now();
 const setDirty = (v = true) => { dirty = v; $('#save').disabled = !v; renderStatus(); };
 
 // ---------- form helpers ----------
@@ -74,7 +74,7 @@ function photoGrid(dir, opts = {}) {
     const files = P[dir] || [];
     const move = async (i, d) => {
       const order = [...files]; [order[i], order[i + d]] = [order[i + d], order[i]];
-      try { const r = await api('photo/order', { method: 'POST', json: { dir, files: order } }); P = r.photos; if (r.hotel) H.hero.image = r.hotel.hero.image; ver = Date.now(); draw(); }
+      try { const r = await api('photo/order', { method: 'POST', json: { dir, files: order } }); P = r.photos; if (r.hotel) { H.hero.image = r.hotel.hero.image; REV = r.rev; } ver = Date.now(); draw(); }
       catch (e) { toast(e.message); }
     };
     const input = h('input', { type: 'file', accept: 'image/*', multiple: true });
@@ -205,7 +205,7 @@ function renderStatus(changed) {
 }
 async function save() {
   $('#save').disabled = true;
-  try { const r = await api('hotel', { method: 'PUT', json: H }); H = r.hotel; P = r.photos; setDirty(false); renderStatus(true); render(); toast('Сохранено. Нажмите «Опубликовать», чтобы изменения появились на сайте.'); return true; }
+  try { const r = await api('hotel', { method: 'PUT', json: H, headers: { 'X-Rev': REV } }); H = r.hotel; REV = r.rev; P = r.photos; setDirty(false); renderStatus(true); render(); toast('Сохранено. Нажмите «Опубликовать», чтобы изменения появились на сайте.'); return true; }
   catch (e) { toast(e.message); $('#save').disabled = false; return false; }
 }
 async function publish() {
@@ -223,7 +223,7 @@ function showLogin() { $('#app').hidden = true; $('#login').hidden = false; }
 async function boot() {
   try {
     const r = await api('hotel');
-    H = r.hotel; P = r.photos; S = r.status;
+    H = r.hotel; REV = r.rev; P = r.photos; S = r.status;
     H.highlights ||= []; H.faq ||= []; H.places ||= []; H.taxi ||= [];
     $('#login').hidden = true; $('#app').hidden = false;
     $('#site-link').href = '/';
