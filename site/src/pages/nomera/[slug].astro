@@ -1,0 +1,68 @@
+---
+import { Image, getImage } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import RoomCard from '../../components/RoomCard.astro';
+import { hotel, roomImages, fmtPrice, bookingUrl, telUrl, waUrl, type Room } from '../../lib/hotel';
+
+export function getStaticPaths() {
+  return hotel.rooms.map((room) => ({ params: { slug: room.slug }, props: { room } }));
+}
+const { room } = Astro.props as { room: Room };
+const imgs = roomImages(room);
+const full = await Promise.all(imgs.map((i) => getImage({ src: i, width: 1600, format: 'webp' })));
+const mains = await Promise.all(imgs.map((i) => getImage({ src: i, widths: [640, 960, 1280], format: 'webp' })));
+const others = hotel.rooms.filter((r) => r.slug !== room.slug).slice(0, 3);
+const ext = bookingUrl().startsWith('http');
+const desc = `${room.name}${room.area ? `, ${room.area} м²` : ''} в отеле «${hotel.short_name}», ${hotel.city}. ${room.text} ${imgs.length} фото, бронирование онлайн.`;
+const ld = [{
+  '@context': 'https://schema.org', '@type': 'HotelRoom', name: room.name, description: room.text,
+  floorSize: room.area ? { '@type': 'QuantitativeValue', value: room.area, unitCode: 'MTK' } : undefined,
+  occupancy: room.guests ? { '@type': 'QuantitativeValue', maxValue: room.guests } : undefined,
+  containedInPlace: { '@id': hotel.site_url + '/#hotel' },
+}];
+---
+<Base title={room.name} description={desc} ogImage={imgs[0]} jsonld={ld}>
+  <div class="wrap">
+    <nav class="crumbs"><a href="/">Главная</a> / <a href="/nomera/">Номера</a> / {room.name}</nav>
+    <h1>{room.name}</h1>
+  </div>
+  <div class="wrap rp">
+    <div data-gallery>
+      <a class="gal-main" href={full[0]?.src} data-lb={room.slug} data-lb-skip data-index="0" data-cap={room.name} style="display:block">
+        {imgs[0] && <Image src={imgs[0]} alt={room.name} widths={[640, 960, 1280]} sizes="(max-width:960px) 100vw, 720px" format="webp" loading="eager" />}
+      </a>
+      <div class="gal-th">
+        {imgs.map((img, i) => (
+          <button type="button" aria-current={i === 0 ? 'true' : 'false'} aria-label={`Фото ${i + 1}`} data-index={i} data-src={mains[i].src} data-srcset={mains[i].srcSet.attribute}>
+            <Image src={img} alt="" width={200} format="webp" loading="lazy" />
+          </button>
+        ))}
+      </div>
+      <div style="display:none">{full.map((f) => <a href={f.src} data-lb={room.slug} data-cap={room.name}></a>)}</div>
+      <div class="prose" style="margin-top:28px">
+        <h2>О номере</h2>
+        <p>{room.text}</p>
+        <p class="muted small">Полный список удобств, условия размещения детей и дополнительных мест уточняйте при бронировании или по телефону {hotel.contacts.phone_display}.</p>
+      </div>
+    </div>
+    <aside class="card">
+      <ul class="specs">
+        {room.area && <li><span>Площадь</span><b>{room.area} м²</b></li>}
+        {room.beds && <li><span>Кровати</span><b>{room.beds}</b></li>}
+        {room.guests && <li><span>Гостей</span><b>до {room.guests}</b></li>}
+        <li><span>Цена</span><b>{room.price_from ? `от ${fmtPrice(room.price_from)} / ночь` : 'зависит от дат'}</b></li>
+      </ul>
+      <div class="stack">
+        <a class="btn btn-primary" href={bookingUrl()} data-goal="book_click" {...(ext ? { target: '_blank', rel: 'noopener' } : {})}>Выбрать даты и забронировать</a>
+        <a class="btn btn-ghost" href={telUrl()} data-goal="phone_click">Позвонить: {hotel.contacts.phone_display}</a>
+        {waUrl() && <a class="btn btn-wa" href={waUrl(`Здравствуйте! Интересует номер «${room.name}». На какие даты есть места?`)} data-goal="wa_click" target="_blank" rel="noopener">Спросить в WhatsApp</a>}
+      </div>
+    </aside>
+  </div>
+  <section class="section soft">
+    <div class="wrap">
+      <h2>Другие номера</h2>
+      <div class="rooms" style="margin-top:24px">{others.map((r) => <RoomCard room={r} />)}</div>
+    </div>
+  </section>
+</Base>

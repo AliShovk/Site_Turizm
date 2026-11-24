@@ -1,0 +1,9 @@
+---
+import { hotel } from '../lib/hotel';
+interface Props { zoom?: number; points?: [number, number][] }
+const { zoom = 15, points = [] } = Astro.props;
+const [lat, lon] = hotel.coords;
+const pts = [`${lon},${lat},pm2rdl`, ...points.map(([a, b], i) => `${b},${a},pm2bll${i + 1}`)].join('~');
+const src = `https://yandex.ru/map-widget/v1/?ll=${lon},${lat}&z=${zoom}&pt=${encodeURIComponent(pts)}`;
+---
+<div class="map"><iframe src={src} title={`${hotel.name} на карте`} loading="lazy" allowfullscreen></iframe></div>

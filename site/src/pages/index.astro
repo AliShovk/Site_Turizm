@@ -1,0 +1,97 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import BookingForm from '../components/BookingForm.astro';
+import RoomCard from '../components/RoomCard.astro';
+import Map from '../components/Map.astro';
+import Cta from '../components/Cta.astro';
+import { hotel, image, hotelImages, distanceKm, fmtKm, fmtPrice, routeUrl, waUrl, roomsWord } from '../lib/hotel';
+
+const hero = image(hotel.hero.image);
+const others = hotelImages().filter((i) => i !== hero);
+const aboutImg = others.find((i) => i.width >= 1000) ?? others[0] ?? hero;
+const near = hotel.places.map((p) => ({ ...p, km: distanceKm(hotel.coords, p.coords) })).sort((a, b) => a.km - b.km).slice(0, 3);
+---
+<Base>
+  <section class="hero">
+    <div class="hero-bg"><Image src={hero} alt={hotel.name} widths={[640, 1024]} sizes="100vw" loading="eager" fetchpriority="high" /></div>
+    <div class="wrap">
+      <div class="chips">
+        {hotel.rating && <span class="chip">★ {String(hotel.rating.value).replace('.', ',')} · {hotel.rating.count} отзывов</span>}
+        <span class="chip">{hotel.address}</span>
+        {hotel.price_from && <span class="chip">от {fmtPrice(hotel.price_from)} за ночь</span>}
+      </div>
+      <h1>{hotel.hero.title}</h1>
+      <p>{hotel.hero.lead}</p>
+      <div class="btns">
+        <a class="btn btn-primary" href="#book">Проверить цены и даты</a>
+        <a class="btn btn-light" href="/kak-dobratsya/">Как добраться</a>
+        {waUrl() && <a class="btn btn-wa" href={waUrl('Здравствуйте! Хочу узнать о номерах.')} data-goal="wa_click" target="_blank" rel="noopener">WhatsApp</a>}
+      </div>
+    </div>
+  </section>
+  <BookingForm />
+
+  <section class="section">
+    <div class="wrap">
+      <div class="hl">{hotel.highlights.map((h) => <div><b>{h.title}</b><span>{h.text}</span></div>)}</div>
+    </div>
+  </section>
+
+  <section class="section soft">
+    <div class="wrap split">
+      <div>
+        <span class="eyebrow">Об отеле</span>
+        <h2>{hotel.type} {hotel.city_prep}</h2>
+        <p class="lead">{hotel.about}</p>
+        <div class="btns"><a class="btn btn-navy" href="/nomera/">Смотреть номера</a><a class="btn btn-ghost" href="/foto/">Все фото</a></div>
+      </div>
+      <div class="ph"><Image src={aboutImg} alt={`Здание отеля «${hotel.short_name}»`} widths={[480, 720, 960]} sizes="(max-width:900px) 100vw, 560px" loading="lazy" /></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="head-row">
+        <div><span class="eyebrow">Номера</span><h2>{hotel.rooms.length} категорий, {hotel.rooms_total} {roomsWord(hotel.rooms_total ?? 0)}</h2></div>
+        <p class="lead">Цена зависит от дат заезда — точную стоимость покажет календарь брони.</p>
+      </div>
+      <div class="rooms">{hotel.rooms.map((r) => <RoomCard room={r} />)}</div>
+    </div>
+  </section>
+
+  {hotel.rating && (
+    <section class="section dark">
+      <div class="wrap rating">
+        <div class="big">{String(hotel.rating.value).replace('.', ',')}</div>
+        <div>
+          <div class="stars" aria-hidden="true">★★★★★</div>
+          <h2 style="margin:6px 0">Оценка гостей</h2>
+          <p class="lead">Средняя оценка {String(hotel.rating.value).replace('.', ',')} из 5 по {hotel.rating.count} отзывам ({hotel.rating.source}).</p>
+          {hotel.rating.url && <a class="btn btn-light" href={hotel.rating.url} target="_blank" rel="noopener">Читать отзывы</a>}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section class="section">
+    <div class="wrap">
+      <div class="head-row">
+        <div><span class="eyebrow">Расположение</span><h2>{hotel.address}</h2></div>
+        <div class="btns">
+          <a class="btn btn-navy" href={routeUrl(hotel.coords, 'auto')} target="_blank" rel="noopener" data-goal="route_click">Маршрут на авто</a>
+          <a class="btn btn-ghost" href="/kak-dobratsya/">Подъезд и такси</a>
+        </div>
+      </div>
+      <Map />
+      <div class="places" style="margin-top:18px">
+        {near.map((p) => (
+          <div class="place"><b>{p.name}</b><span class="dist">{fmtKm(p.km)} по прямой</span><p>{p.text}</p>
+            <a href={routeUrl(p.coords, 'pd', hotel.coords)} target="_blank" rel="noopener" data-goal="route_click">Пеший маршрут →</a></div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <Cta />
+</Base>

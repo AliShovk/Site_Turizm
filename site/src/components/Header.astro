@@ -1,0 +1,27 @@
+---
+import { hotel, telUrl, bookingUrl } from '../lib/hotel';
+const nav = [
+  ['/nomera/', 'Номера и цены'],
+  ['/foto/', 'Фото'],
+  ['/kak-dobratsya/', 'Как добраться'],
+  ['/chto-ryadom/', 'Что рядом'],
+  ['/voprosy/', 'Вопросы'],
+  ['/kontakty/', 'Контакты'],
+];
+const path = Astro.url.pathname;
+const ext = bookingUrl().startsWith('http');
+---
+<header class="hdr">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label={`${hotel.name} — на главную`}>
+      <b>{hotel.short_name.toUpperCase()}</b>
+      <span>{hotel.type} · {hotel.city}{hotel.stars ? ` · ${hotel.stars}★` : ''}</span>
+    </a>
+    <nav class="nav" id="nav">
+      {nav.map(([href, label]) => <a href={href} aria-current={path.startsWith(href) ? 'page' : undefined}>{label}</a>)}
+    </nav>
+    <a class="hdr-tel" href={telUrl()} data-goal="phone_click">{hotel.contacts.phone_display}</a>
+    <a class="btn btn-primary" href={bookingUrl()} data-goal="book_click" {...(ext ? { target: '_blank', rel: 'noopener' } : {})}>Забронировать</a>
+    <button class="burger" type="button" aria-label="Меню" aria-controls="nav" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>

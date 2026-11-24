@@ -1,0 +1,66 @@
+---
+import Base from '../layouts/Base.astro';
+import Map from '../components/Map.astro';
+import Cta from '../components/Cta.astro';
+import { hotel, distanceKm, fmtKm, routeUrl, telUrl } from '../lib/hotel';
+const [lat, lon] = hotel.coords;
+const a = hotel.arrival;
+const from = [a.airport, a.station].filter(Boolean).map((p) => ({ ...p!, km: distanceKm(p!.coords, hotel.coords) }));
+---
+<Base title="Как добраться" description={`Как добраться до отеля «${hotel.short_name}»: ${hotel.city}, ${hotel.address}. Маршрут на авто и пешком, от вокзала и аэропорта Минеральные Воды, вызов такси.`}>
+  <section class="section">
+    <div class="wrap">
+      <nav class="crumbs"><a href="/">Главная</a> / Как добраться</nav>
+      <h1>Как добраться</h1>
+      <p class="lead">{hotel.city}, {hotel.address}. Координаты для навигатора: {lat.toFixed(5)}, {lon.toFixed(5)}.</p>
+      <div class="btns" style="margin:20px 0 28px">
+        <a class="btn btn-navy" href={routeUrl(hotel.coords, 'auto')} target="_blank" rel="noopener" data-goal="route_click">Маршрут на авто</a>
+        <a class="btn btn-ghost" href={routeUrl(hotel.coords, 'mt')} target="_blank" rel="noopener" data-goal="route_click">На общественном транспорте</a>
+        <a class="btn btn-ghost" href={`https://2gis.ru/geo/${lon},${lat}`} target="_blank" rel="noopener" data-goal="route_click">Открыть в 2ГИС</a>
+        <button class="btn btn-ghost" type="button" data-copy={`${lat.toFixed(6)}, ${lon.toFixed(6)}`}>Скопировать координаты</button>
+      </div>
+      <Map zoom={16} />
+    </div>
+  </section>
+
+  <section class="section soft">
+    <div class="wrap">
+      <h2>Откуда вы едете</h2>
+      <div class="places" style="margin-top:20px">
+        {from.map((p) => (
+          <div class="place"><b>{p.name}</b><span class="dist">{fmtKm(p.km)} по прямой</span>
+            <p>Постройте маршрут — навигатор покажет время в пути с учётом пробок.</p>
+            <a href={routeUrl(hotel.coords, 'auto', p.coords)} target="_blank" rel="noopener" data-goal="route_click">Маршрут на авто →</a>
+            <a href={routeUrl(hotel.coords, 'mt', p.coords)} target="_blank" rel="noopener" data-goal="route_click">На общественном транспорте →</a></div>
+        ))}
+        <div class="place"><b>Трансфер</b><span class="dist">по запросу</span>
+          <p>Нужна встреча в аэропорту или на вокзале? Позвоните администратору — подскажем лучший вариант.</p>
+          <a href={telUrl()} data-goal="phone_click">{hotel.contacts.phone_display} →</a></div>
+      </div>
+    </div>
+  </section>
+
+  {a.steps.length > 0 && (
+    <section class="section"><div class="wrap">
+      <h2>Подъезд и парковка</h2>
+      <ol class="steps" style="margin-top:20px">{a.steps.map((s) => <li>{s}</li>)}</ol>
+    </div></section>
+  )}
+
+  <section class="section" id="taxi">
+    <div class="wrap">
+      <h2>Вызвать такси</h2>
+      <p class="lead">Кнопка открывает заказ уже с точкой отеля — адрес вводить не нужно.</p>
+      <div class="tiles" style="margin-top:20px">
+        {hotel.taxi.map((t) => <a class="tile" href={t.url} data-goal="taxi_click" {...(t.url.startsWith('http') ? { target: '_blank', rel: 'noopener' } : {})}><b>{t.name}</b><span>{t.text}</span></a>)}
+      </div>
+    </div>
+  </section>
+  <Cta />
+</Base>
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) => b.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(b.dataset.copy!);
+    const t = b.textContent; b.textContent = 'Скопировано'; setTimeout(() => (b.textContent = t), 1600);
+  }));
+</script>

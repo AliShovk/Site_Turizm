@@ -1,0 +1,24 @@
+{
+  "name": "hotel-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.6",
+    "@fontsource-variable/manrope": "^5.3.0",
+    "@fontsource/playfair-display": "^5.3.0",
+    "astro": "^5.18.2",
+    "js-yaml": "^4.1.0",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@types/js-yaml": "^4.0.9",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,41 @@
+---
+import { hotel, telUrl, waUrl } from '../lib/hotel';
+const year = new Date().getFullYear();
+---
+<footer class="ftr">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <b>{hotel.name}</b>
+        <p>{hotel.city}, {hotel.address}</p>
+        <p>
+          <a href={telUrl()} data-goal="phone_click">{hotel.contacts.phone_display}</a>
+          {hotel.contacts.email && <><br><a href={`mailto:${hotel.contacts.email}`} data-goal="email_click">{hotel.contacts.email}</a></>}
+          {waUrl() && <><br><a href={waUrl()} data-goal="wa_click" target="_blank" rel="noopener">WhatsApp</a></>}
+        </p>
+      </div>
+      <div>
+        <b>Гостям</b>
+        <ul>
+          <li><a href="/nomera/">Номера и цены</a></li>
+          <li><a href="/foto/">Фотографии</a></li>
+          <li><a href="/kak-dobratsya/">Как добраться</a></li>
+          <li><a href="/chto-ryadom/">Что посмотреть рядом</a></li>
+          <li><a href="/voprosy/">Частые вопросы</a></li>
+        </ul>
+      </div>
+      <div>
+        <b>Информация</b>
+        <ul>
+          <li><a href="/kontakty/">Контакты и реквизиты</a></li>
+          <li><a href="/politika/">Политика конфиденциальности</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="legal">
+      © {year} {hotel.name}. {hotel.legal.name}
+      {hotel.legal.inn && ` · ИНН ${hotel.legal.inn}`}
+      {hotel.legal.ogrn && ` · ${hotel.legal.ogrn.length === 15 ? 'ОГРНИП' : 'ОГРН'} ${hotel.legal.ogrn}`}
+    </div>
+  </div>
+</footer>
