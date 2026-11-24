@@ -8,14 +8,14 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import MobileBar from '../components/MobileBar.astro';
 import Lightbox from '../components/Lightbox.astro';
-import { hotel, image } from '../lib/hotel';
+import { hotel, heroImage } from '../lib/hotel';
 
 interface Props { title?: string; description?: string; ogImage?: ImageMetadata; jsonld?: object[] }
 const { title, description, ogImage, jsonld = [] } = Astro.props;
 const fullTitle = title ? `${title} — ${hotel.name}, ${hotel.city}` : hotel.seo.title;
 const desc = description ?? hotel.seo.description;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
-const og = await getImage({ src: ogImage ?? image(hotel.hero.image), width: 1200, format: 'jpg' });
+const og = await getImage({ src: ogImage ?? heroImage(), width: 1200, format: 'jpg' });
 const ogUrl = new URL(og.src, Astro.site).href;
 const metrika = hotel.analytics.metrika_id;
 

@@ -5,9 +5,9 @@ import BookingForm from '../components/BookingForm.astro';
 import RoomCard from '../components/RoomCard.astro';
 import Map from '../components/Map.astro';
 import Cta from '../components/Cta.astro';
-import { hotel, image, hotelImages, distanceKm, fmtKm, fmtPrice, routeUrl, waUrl, roomsWord, hasBookingForm, bookingUrl } from '../lib/hotel';
+import { hotel, heroImage, hotelImages, distanceKm, fmtKm, fmtPrice, routeUrl, waUrl, roomsWord, hasBookingForm, bookingUrl } from '../lib/hotel';
 
-const hero = image(hotel.hero.image);
+const hero = heroImage();
 const others = hotelImages().filter((i) => i !== hero);
 const aboutImg = others.find((i) => i.width >= 1000) ?? others[0] ?? hero;
 const near = hotel.places.map((p) => ({ ...p, km: distanceKm(hotel.coords, p.coords) })).sort((a, b) => a.km - b.km).slice(0, 3);

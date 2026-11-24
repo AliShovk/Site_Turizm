@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1c2b45">
+<title>Админка сайта отеля</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/admin/admin.css">
+<script type="module" src="/admin/admin.js"></script>
+</head>
+<body>
+<div id="login" class="login" hidden>
+  <form id="login-form" class="card">
+    <h1>Вход в админку</h1>
+    <label class="f"><span>Пароль</span><input type="password" name="password" autocomplete="current-password" required autofocus></label>
+    <p class="err" id="login-err"></p>
+    <button class="btn primary wide" type="submit">Войти</button>
+  </form>
+</div>
+<div id="app" hidden>
+  <header class="top">
+    <div class="top-in">
+      <b id="hotel-name">Отель</b>
+      <a id="site-link" class="muted small" target="_blank" rel="noopener">Открыть сайт ↗</a>
+      <button id="logout" class="link small" type="button">Выйти</button>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button data-tab="rooms" aria-current="true">Номера и цены</button>
+      <button data-tab="photos">Фото отеля</button>
+      <button data-tab="main">Главная</button>
+      <button data-tab="contacts">Контакты и бронь</button>
+      <button data-tab="faq">Вопросы</button>
+      <button data-tab="places">Рядом и такси</button>
+    </nav>
+  </header>
+  <main id="view" class="view"></main>
+  <footer class="bar">
+    <div class="bar-in">
+      <span id="pub-status" class="muted small"></span>
+      <button id="save" class="btn" type="button" disabled>Сохранить</button>
+      <button id="publish" class="btn primary" type="button">Опубликовать</button>
+    </div>
+  </footer>
+</div>
+<div id="toast" class="toast" role="status"></div>
+</body>
+</html>
