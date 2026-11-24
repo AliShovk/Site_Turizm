@@ -179,14 +179,16 @@ async function handle(req, res) {
 
   if (p === '/api/login' && req.method === 'POST') {
     if (tooMany(ip)) return send(res, 429, { error: 'Слишком много попыток. Подождите 15 минут.' });
+    const tries = attempts.get(ip), at = Date.now();
+    tries.push(at);
     const { password } = await readJson(req);
     if (!eq(crypto.createHash('sha256').update(String(password || '')).digest('hex'), crypto.createHash('sha256').update(PASSWORD).digest('hex'))) {
-      attempts.get(ip).push(Date.now());
       return send(res, 401, { error: 'Неверный пароль' });
     }
+    tries.splice(tries.indexOf(at), 1);
     return send(res, 200, { ok: true }, { 'Set-Cookie': `adm=${makeToken()}; Path=/admin; HttpOnly; Secure; SameSite=Strict; Max-Age=${SESSION_TTL / 1000}` });
   }
-  if (p === '/api/logout') return send(res, 200, { ok: true }, { 'Set-Cookie': 'adm=; Path=/admin; HttpOnly; Secure; SameSite=Strict; Max-Age=0' });
+  if (p === '/api/logout' && req.method === 'POST' && req.headers['x-admin'] === '1') return send(res, 200, { ok: true }, { 'Set-Cookie': 'adm=; Path=/admin; HttpOnly; Secure; SameSite=Strict; Max-Age=0' });
   if (!validToken(cookies(req).adm)) return send(res, 401, { error: 'Нужен вход' });
   if (req.method !== 'GET' && req.headers['x-admin'] !== '1') return send(res, 403, { error: 'forbidden' });
 
