@@ -1,9 +1,9 @@
 ---
-import { hotel, waUrl, bookingMode, bookingUrl } from '../lib/hotel';
+import { hotel, waUrl, bookingMode, bookingUrl, hasBookingForm } from '../lib/hotel';
 const b = hotel.booking;
 const mode = bookingMode();
 const wa = waUrl(), email = hotel.contacts.email;
-const show = mode !== 'request' || wa || email;
+const show = hasBookingForm();
 const label = { bnovo: 'Показать цены', link: 'Забронировать', request: 'Отправить заявку' }[mode];
 const note = mode === 'request'
   ? `Заявка уйдёт администратору ${wa ? 'в WhatsApp' : 'на e-mail'} — он подтвердит наличие и цену.`

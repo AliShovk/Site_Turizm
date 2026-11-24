@@ -5,7 +5,7 @@ import BookingForm from '../components/BookingForm.astro';
 import RoomCard from '../components/RoomCard.astro';
 import Map from '../components/Map.astro';
 import Cta from '../components/Cta.astro';
-import { hotel, image, hotelImages, distanceKm, fmtKm, fmtPrice, routeUrl, waUrl, roomsWord } from '../lib/hotel';
+import { hotel, image, hotelImages, distanceKm, fmtKm, fmtPrice, routeUrl, waUrl, roomsWord, hasBookingForm, bookingUrl } from '../lib/hotel';
 
 const hero = image(hotel.hero.image);
 const others = hotelImages().filter((i) => i !== hero);
@@ -24,7 +24,7 @@ const near = hotel.places.map((p) => ({ ...p, km: distanceKm(hotel.coords, p.coo
       <h1>{hotel.hero.title}</h1>
       <p>{hotel.hero.lead}</p>
       <div class="btns">
-        <a class="btn btn-primary" href="#book">Проверить цены и даты</a>
+        <a class="btn btn-primary" href={hasBookingForm() ? '#book' : bookingUrl()}>Проверить цены и даты</a>
         <a class="btn btn-light" href="/kak-dobratsya/">Как добраться</a>
         {waUrl() && <a class="btn btn-wa" href={waUrl('Здравствуйте! Хочу узнать о номерах.')} data-goal="wa_click" target="_blank" rel="noopener">WhatsApp</a>}
       </div>

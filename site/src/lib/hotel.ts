@@ -62,6 +62,7 @@ export const telUrl = () => `tel:${hotel.contacts.phone}`;
 export const waUrl = (text?: string) => hotel.contacts.whatsapp
   ? `https://wa.me/${hotel.contacts.whatsapp}${text ? `?text=${encodeURIComponent(text)}` : ''}` : null;
 export const bookingMode = () => hotel.booking.provider !== 'request' && hotel.booking.url ? hotel.booking.provider : 'request';
+export const hasBookingForm = () => bookingMode() !== 'request' || !!hotel.contacts.whatsapp || !!hotel.contacts.email;
 export const bookingUrl = () => bookingMode() !== 'request'
   ? hotel.booking.url + (hotel.booking.lang ? `?lang=${hotel.booking.lang}` : '') : '/kontakty/#zayavka';
 export const roomsWord = (n: number) => {
