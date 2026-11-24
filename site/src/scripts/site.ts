@@ -41,12 +41,16 @@ if (book) {
       if (d.lang) q.set('lang', d.lang);
       url = `${d.url}?${q}`;
       goal('book_search');
+    } else if (d.mode === 'link') {
+      url = d.link!;
+      goal('book_click');
     } else {
       const text = `Здравствуйте! Хочу забронировать номер в ${d.hotel}: заезд ${ruDots(fin.value)}, выезд ${ruDots(fout.value)}, взрослых: ${adults}.`;
-      url = `${d.wa}?text=${encodeURIComponent(text)}`;
+      url = d.wa ? `${d.wa}?text=${encodeURIComponent(text)}`
+        : `mailto:${d.email}?subject=${encodeURIComponent('Заявка на бронирование')}&body=${encodeURIComponent(text)}`;
       goal('request_send');
     }
-    window.open(url, '_blank', 'noopener');
+    window.open(url, url.startsWith('mailto:') ? '_self' : '_blank', 'noopener');
   });
 }
 

@@ -1,10 +1,16 @@
 ---
-import { hotel, waUrl } from '../lib/hotel';
+import { hotel, waUrl, bookingMode, bookingUrl } from '../lib/hotel';
 const b = hotel.booking;
-const mode = b.provider === 'bnovo' && b.url ? 'bnovo' : 'request';
+const mode = bookingMode();
+const wa = waUrl(), email = hotel.contacts.email;
+const show = mode !== 'request' || wa || email;
+const label = { bnovo: 'Показать цены', link: 'Забронировать', request: 'Отправить заявку' }[mode];
+const note = mode === 'request'
+  ? `Заявка уйдёт администратору ${wa ? 'в WhatsApp' : 'на e-mail'} — он подтвердит наличие и цену.`
+  : 'Откроется система бронирования отеля: актуальные цены, свободные номера и подтверждение сразу.';
 ---
-<div class="book wrap">
-  <form id="book" method="post" data-mode={mode} data-url={b.url ?? ''} data-lang={b.lang ?? ''} data-wa={waUrl() ?? ''} data-hotel={hotel.name}>
+{show && <div class="book wrap">
+  <form id="book" method="post" data-mode={mode} data-url={b.url ?? ''} data-link={bookingUrl()} data-lang={b.lang ?? ''} data-wa={wa ?? ''} data-email={email ?? ''} data-hotel={hotel.name}>
     <div class="field"><label for="b-in">Заезд</label><input id="b-in" name="in" type="date" required></div>
     <div class="field"><label for="b-out">Выезд</label><input id="b-out" name="out" type="date" required></div>
     <div class="field">
@@ -16,9 +22,7 @@ const mode = b.provider === 'bnovo' && b.url ? 'bnovo' : 'request';
         <option value="4">4 взрослых</option>
       </select>
     </div>
-    <button class="btn btn-navy" type="submit">{mode === 'bnovo' ? 'Показать цены' : 'Отправить заявку'}</button>
+    <button class="btn btn-navy" type="submit">{label}</button>
   </form>
-  <p class="book-note">{mode === 'bnovo'
-    ? 'Откроется система бронирования отеля: актуальные цены, свободные номера и подтверждение сразу.'
-    : 'Заявка уйдёт администратору в WhatsApp — он подтвердит наличие и цену.'}</p>
-</div>
+  <p class="book-note">{note}</p>
+</div>}

@@ -61,7 +61,8 @@ export const routeUrl = (to: [number, number], mode: 'auto' | 'pd' | 'mt' = 'pd'
 export const telUrl = () => `tel:${hotel.contacts.phone}`;
 export const waUrl = (text?: string) => hotel.contacts.whatsapp
   ? `https://wa.me/${hotel.contacts.whatsapp}${text ? `?text=${encodeURIComponent(text)}` : ''}` : null;
-export const bookingUrl = () => hotel.booking.url
+export const bookingMode = () => hotel.booking.provider !== 'request' && hotel.booking.url ? hotel.booking.provider : 'request';
+export const bookingUrl = () => bookingMode() !== 'request'
   ? hotel.booking.url + (hotel.booking.lang ? `?lang=${hotel.booking.lang}` : '') : '/kontakty/#zayavka';
 export const roomsWord = (n: number) => {
   const m10 = n % 10, m100 = n % 100;
