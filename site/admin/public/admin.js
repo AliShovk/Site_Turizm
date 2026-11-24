@@ -83,7 +83,7 @@ function photoGrid(dir, opts = {}) {
     const files = P[dir] || [];
     const move = async (i, d) => {
       const order = [...files]; [order[i], order[i + d]] = [order[i + d], order[i]];
-      try { const r = await api('photo/order', { method: 'POST', json: { dir, files: order } }); P = r.photos; if (r.hotel) { H.hero.image = r.hotel.hero.image; REV = r.rev; } ver = Date.now(); draw(); }
+      try { const r = await api('photo/order', { method: 'POST', json: { dir, files: order }, headers: { 'X-Rev': REV } }); P = r.photos; if (r.rev) { H.hero.image = r.hotel.hero.image; REV = r.rev; } ver = Date.now(); draw(); }
       catch (e) { toast(e.message); }
     };
     const input = h('input', { type: 'file', accept: 'image/*', multiple: true });

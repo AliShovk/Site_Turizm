@@ -242,6 +242,7 @@ async function handle(req, res) {
   if (p === '/api/photo/order' && req.method === 'POST') {
     const { dir: d, files } = await readJson(req);
     const dir = dirPath(d, h);
+    if (d === 'hotel' && req.headers['x-rev'] !== await revision()) return send(res, 409, { error: 'Данные изменились в другой вкладке или на другом устройстве. Обновите страницу.' });
     const cur = await listDir(dir);
     if (!Array.isArray(files) || files.length !== cur.length || [...files].sort().join() !== [...cur].sort().join()) throw bad('Список фото устарел, обновите страницу');
     const prefix = path.basename(dir), tag = Date.now();
@@ -257,7 +258,7 @@ async function handle(req, res) {
       if (renamed[old]) { h.hero.image = `hotel/${renamed[old]}`; await writeHotel(h); }
     }
     state.savedAt = Date.now(); await persist();
-    return send(res, 200, { hotel: h, rev: await revision(), photos: await photos(h) });
+    return send(res, 200, { hotel: h, ...(d === 'hotel' ? { rev: await revision() } : {}), photos: await photos(h) });
   }
   if (p === '/api/publish' && req.method === 'POST') {
     if (!publish()) return send(res, 409, { error: 'Сборка уже идёт' });
