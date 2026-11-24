@@ -263,8 +263,11 @@ async function handle(req, res) {
   return send(res, 404, { error: 'not found' });
 }
 
+let queue = Promise.resolve();
+const serial = (req, res) => req.method === 'GET' ? handle(req, res) : (queue = queue.then(() => handle(req, res), () => handle(req, res)));
+
 http.createServer((req, res) => {
-  handle(req, res).catch((e) => {
+  serial(req, res).catch((e) => {
     if (!e.code || e.code >= 500 || typeof e.code !== 'number') console.error(e);
     if (!res.headersSent) send(res, typeof e.code === 'number' ? e.code : 500, { error: typeof e.code === 'number' ? e.message : 'Ошибка сервера' });
   });
