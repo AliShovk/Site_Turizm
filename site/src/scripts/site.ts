@@ -56,6 +56,16 @@ if (book) {
 
 // request form (contacts page) -> WhatsApp / e-mail
 const req = document.getElementById('zayavka-form') as HTMLFormElement | null;
+const zin = document.getElementById('z-in') as HTMLInputElement | null;
+const zout = document.getElementById('z-out') as HTMLInputElement | null;
+if (zin && zout) {
+  zin.min = iso(new Date());
+  const sync = () => {
+    zout.min = zin.value ? nextDay(zin.value) : zin.min;
+    zout.setCustomValidity(zin.value && zout.value && zout.value <= zin.value ? 'Дата выезда должна быть позже даты заезда' : '');
+  };
+  zin.addEventListener('change', sync); zout.addEventListener('change', sync); sync();
+}
 req?.addEventListener('submit', (e) => {
   e.preventDefault();
   const f = new FormData(req);
