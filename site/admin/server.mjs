@@ -49,6 +49,8 @@ const send = (res, code, body, headers = {}) => {
 };
 const readBody = (req, limit) => new Promise((ok, fail) => {
   const chunks = []; let n = 0;
+  if (req.destroyed) return fail(Object.assign(new Error('Запрос прерван'), { code: 400 }));
+  req.on('close', () => { if (!req.complete) fail(Object.assign(new Error('Запрос прерван'), { code: 400 })); });
   req.on('data', (c) => { n += c.length; if (n > limit) { fail(Object.assign(new Error('Файл слишком большой'), { code: 413 })); req.destroy(); } else chunks.push(c); });
   req.on('end', () => ok(Buffer.concat(chunks))); req.on('error', fail);
 });
