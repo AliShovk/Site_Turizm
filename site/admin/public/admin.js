@@ -24,14 +24,23 @@ let H = null, REV = '', P = {}, S = {}, dirty = false, tab = 'rooms', roomIdx = 
 const setDirty = (v = true) => { dirty = v; $('#save').disabled = !v; renderStatus(); };
 
 // ---------- form helpers ----------
+const parseNum = (s) => { const t = s.replace(/[\s\u00a0₽]/g, '').replace(',', '.'); return t === '' ? null : /^-?\d+(\.\d+)?$/.test(t) ? Number(t) : NaN; };
+function numInput(el, set) {
+  const v = parseNum(el.value);
+  el.setCustomValidity(Number.isNaN(v) ? 'Введите число, например 6200' : '');
+  el.reportValidity();
+  if (!Number.isNaN(v)) set(v);
+  setDirty();
+}
 function field(label, obj, key, o = {}) {
   const val = obj[key];
   const el = o.type === 'textarea' ? h('textarea', { rows: o.rows || 4 }) : o.options ? h('select', {}, o.options.map(([v, t]) => h('option', { value: v }, t)))
-    : h('input', { type: o.type || 'text', inputmode: o.type === 'number' ? 'decimal' : null, placeholder: o.ph, autocomplete: 'off' });
+    : h('input', { type: o.type === 'number' ? 'text' : o.type || 'text', inputmode: o.type === 'number' ? 'decimal' : null, placeholder: o.ph, autocomplete: 'off' });
   el.value = val ?? '';
   el.addEventListener('input', () => {
+    if (o.type === 'number') return numInput(el, (v) => { obj[key] = v; o.onchange?.(); });
     const v = el.value.trim();
-    obj[key] = o.type === 'number' ? (v === '' ? null : Number(v.replace(',', '.'))) : (v === '' && o.nullable !== false ? null : el.value);
+    obj[key] = v === '' && o.nullable !== false ? null : el.value;
     setDirty(); o.onchange?.();
   });
   return h('label', { class: 'f' }, h('span', {}, label), el, o.hint && h('small', {}, o.hint));
@@ -118,7 +127,7 @@ const views = {
       const price = h('input', { class: 'price-in', type: 'text', inputmode: 'numeric', placeholder: 'цена от', 'aria-label': `Цена от, ${r.name}` });
       price.value = r.price_from ?? '';
       price.addEventListener('click', (e) => e.stopPropagation());
-      price.addEventListener('input', () => { const v = price.value.replace(/\D/g, ''); r.price_from = v ? Number(v) : null; setDirty(); });
+      price.addEventListener('input', () => numInput(price, (v) => { r.price_from = v == null ? null : Math.round(v); }));
       return h('div', { class: 'card room-item', onclick: () => { roomIdx = i; render(); scrollTo(0, 0); } },
         ph ? h('img', { src: thumb(`rooms/${r.slug}`, ph), alt: '' }) : h('div', { class: 'noimg' }),
         h('div', { class: 'ri' }, h('b', {}, r.name || 'Без названия'), h('span', { class: 'muted small' }, `${P[`rooms/${r.slug}`]?.length || 0} фото · ${r.area ? r.area + ' м²' : 'площадь не указана'}`)),
@@ -204,6 +213,8 @@ function renderStatus(changed) {
   $('#publish').disabled = S.status === 'building';
 }
 async function save() {
+  const invalid = $('#view').querySelector(':invalid');
+  if (invalid) { invalid.focus(); invalid.reportValidity(); toast('Исправьте поле с ошибкой'); return false; }
   $('#save').disabled = true;
   try { const r = await api('hotel', { method: 'PUT', json: H, headers: { 'X-Rev': REV } }); H = r.hotel; REV = r.rev; P = r.photos; setDirty(false); renderStatus(true); render(); toast('Сохранено. Нажмите «Опубликовать», чтобы изменения появились на сайте.'); return true; }
   catch (e) { toast(e.message); $('#save').disabled = false; return false; }
