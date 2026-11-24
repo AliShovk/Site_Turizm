@@ -128,7 +128,7 @@ const views = {
       price.value = r.price_from ?? '';
       price.addEventListener('click', (e) => e.stopPropagation());
       price.addEventListener('input', () => numInput(price, (v) => { r.price_from = v == null ? null : Math.round(v); }));
-      return h('div', { class: 'card room-item', onclick: () => { roomIdx = i; render(); scrollTo(0, 0); } },
+      return h('div', { class: 'card room-item', onclick: () => { roomIdx = i; if (render() === false) roomIdx = null; else scrollTo(0, 0); } },
         ph ? h('img', { src: thumb(`rooms/${r.slug}`, ph), alt: '' }) : h('div', { class: 'noimg' }),
         h('div', { class: 'ri' }, h('b', {}, r.name || 'Без названия'), h('span', { class: 'muted small' }, `${P[`rooms/${r.slug}`]?.length || 0} фото · ${r.area ? r.area + ' м²' : 'площадь не указана'}`)),
         price, h('span', { class: 'muted small' }, '₽'));
@@ -183,7 +183,7 @@ function ratingCard() {
 }
 function roomEditor(r) {
   const dir = `rooms/${r.slug}`;
-  return [h('button', { class: 'btn sm back', type: 'button', onclick: () => { roomIdx = null; render(); } }, '← Все номера'),
+  return [h('button', { class: 'btn sm back', type: 'button', onclick: () => { const i = roomIdx; roomIdx = null; if (render() === false) roomIdx = i; } }, '← Все номера'),
     h('h1', {}, r.name || 'Номер'),
     h('div', { class: 'card' }, field('Название', r, 'name', { nullable: false, onchange: () => { $('h1', $('#view')).textContent = r.name; } }),
       h('div', { class: 'grid' }, field('Цена от, ₽ за ночь', r, 'price_from', { type: 'number', hint: 'Пусто — «Цена по датам»' }), field('Площадь, м²', r, 'area', { type: 'number' }), field('Гостей до', r, 'guests', { type: 'number' })),
@@ -195,6 +195,8 @@ function roomEditor(r) {
 }
 
 function render() {
+  const bad = $('#view').querySelector(':invalid');
+  if (bad) { bad.focus(); bad.reportValidity(); toast('Исправьте поле с ошибкой'); tab = $('#tabs [aria-current=true]')?.dataset.tab || tab; return false; }
   document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-current', String(b.dataset.tab === tab)));
   $('#view').replaceChildren(...[views[tab]()].flat());
   $('#hotel-name').textContent = H.name;
@@ -247,7 +249,11 @@ $('#login-form').addEventListener('submit', async (e) => {
   try { await api('login', { method: 'POST', json: { password: e.target.password.value } }); e.target.reset(); $('#login-err').textContent = ''; boot(); }
   catch (err) { $('#login-err').textContent = err.message; }
 });
-$('#tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; tab = b.dataset.tab; roomIdx = null; render(); scrollTo(0, 0); });
+$('#tabs').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  const prev = [tab, roomIdx]; tab = b.dataset.tab; roomIdx = null;
+  if (render() === false) [tab, roomIdx] = prev; else scrollTo(0, 0);
+});
 $('#save').addEventListener('click', save);
 $('#publish').addEventListener('click', publish);
 $('#logout').addEventListener('click', async () => { await api('logout', { method: 'POST' }).catch(() => {}); location.reload(); });
