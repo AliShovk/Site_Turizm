@@ -134,7 +134,7 @@ arrival:
 taxi:
   - name: Яндекс Go
     text: Откроет заказ с точкой отеля
-    url: https://taxi.yandex.ru/action/order_taxi/?gps=43.9133217,42.7194874&ref=hotel
+    url: https://3.redirect.appmetrica.yandex.com/route?end-lat=43.9133217&end-lon=42.7194874&ref=prospekt&appmetrica_tracking_id=1178268795219780156
   - name: Maxim
     text: Сайт и приложение службы в Кисловодске
     url: https://taximaxim.ru/
