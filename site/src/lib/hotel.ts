@@ -9,7 +9,7 @@ export interface Room {
   guests: number | null; price_from: number | null; text: string;
 }
 export interface Hotel {
-  slug: string; site_url: string; name: string; short_name: string; type: string;
+  slug: string; site_url: string; noindex?: boolean; name: string; short_name: string; type: string;
   stars: number | null; city: string; city_prep: string; address: string;
   postal_code: string | null; region: string | null; coords: [number, number];
   rooms_total: number | null; price_from: number | null; currency: string;

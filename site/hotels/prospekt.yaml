@@ -4,6 +4,7 @@
 
 slug: prospekt
 site_url: https://prospekt.qantcore.space
+noindex: true # демо: закрыть от поисковиков до переезда на домен отеля
 name: Отель «Проспект»
 short_name: Проспект
 type: Отель
